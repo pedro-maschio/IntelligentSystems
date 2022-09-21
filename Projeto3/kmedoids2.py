@@ -1,38 +1,47 @@
 from sklearn_extra.cluster import KMedoids
-from sklearn.decomposition import PCA
+import matplotlib.pyplot as plt 
 import cv2
 import numpy as np 
 
 original_image = cv2.imread('petri.jpg')
 
-scale = 30 # scale in percentage
+scale = 20 # scala em porcentagem
 
 img = cv2.resize(original_image, (int(original_image.shape[1]*scale/100), int(original_image.shape[0]*scale/100)), interpolation=cv2.INTER_AREA)
 img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
 
-img = img.reshape((-1, 3))
-img = np.float32(img)
+imagem_vectorizada = img.reshape((-1, 3))
+imagem_vectorizada = np.float32(imagem_vectorizada)
 
+# with np.printoptions(threshold=np.inf):
+#     with open('kmedoidsimagem_vectorizada.txt', 'w') as f:
+#         f.write(str(imagem_vectorizada))
 
-# r, g, b = cv2.split(img)
+k =4 
+kmedoids = KMedoids(n_clusters=k, method='pam', random_state=0).fit(imagem_vectorizada)
 
-# r = r/255
-# g = g/255
-# b = b/255
+centers = kmedoids.cluster_centers_
 
-# print(r.shape)
-# pca_r = PCA(n_components=50).fit_transform(r)
-# print(pca_r.shape)
+# with np.printoptions(threshold=np.inf):
+#     with open('kmedoidslabels.txt', 'w') as f:
+#         f.write(str(kmedoids.labels_))
 
-# pca_g = PCA(n_components=50).fit_transform(g)
+res = centers[kmedoids.labels_.flatten()]
 
-# pca_b = PCA(n_components=50).fit_transform(b)
+# with np.printoptions(threshold=np.inf):
+#     with open('kmedoidsres.txt', 'w') as f:
+#         f.write(str(res))
 
+result_image = res.reshape((img.shape))
 
+# with np.printoptions(threshold=np.inf):
+#     with open('kmedoidsresult_image.txt', 'w') as f:
+#         f.write(str(result_image))
 
-print(img.shape)
-reduced_image = PCA(n_components=3).fit_transform(img)
-print(reduced_image.shape)
-kmedoids = KMedoids(n_clusters=4, random_state=0).fit(reduced_image)
-
-print(kmedoids.cluster_centers_)
+tamanho_da_figura = 20
+plt.figure(figsize=(tamanho_da_figura,tamanho_da_figura))
+plt.subplot(1,2,1),plt.imshow(img)
+plt.title('Imagem original'), plt.xticks([]), plt.yticks([])
+plt.subplot(1,2,2),plt.imshow((result_image * 255).astype(np.uint8))
+plt.title('Imagem segmentada com  K = %i' % k), plt.xticks([]), plt.yticks([])
+plt.show()
